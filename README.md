@@ -16,19 +16,21 @@ This project aims to simulate a full data science workflow from raw data collect
 ---
 
 ## 📁 Project Structure
+```
 Reddit_Data_Project/
-├── data/ # Raw and processed Reddit data
-│ ├── raw/ # As downloaded
-│ └── processed/ # Cleaned datasets
-├── notebooks/ # Jupyter notebooks (EDA, modeling, etc.)
-│ └── 01_initial_exploration.ipynb
-├── scripts/ # Scripts for scraping, cleaning, etc.
-│ └── reddit_scraper.py
-├── reports/ # Reports and charts
-│ └── figures/ # Visualizations
-├── README.md # This file
-├── requirements.txt # Dependencies
+├── data/                           # Raw and processed Reddit data
+│   ├── raw/                        # As downloaded
+│   └── processed/                  # Cleaned datasets
+├── notebooks/                      # Jupyter notebooks (EDA, modeling, etc.)
+│   └── 01_initial_exploration.ipynb
+├── scripts/                        # Scripts for scraping, cleaning, etc.
+│   └── reddit_scraper.py
+├── reports/                        # Reports and charts
+│   └── figures/                    # Visualizations
+├── README.md                       # This file
+├── requirements.txt                # Dependencies
 └── .gitignore
+```
 
 
 ---
@@ -71,9 +73,9 @@ The data is anonymized and used strictly for educational purposes.
 This is a solo learning project, not affiliated with Reddit or any research institution.
 
 # ✨ Author
-Paulina Michalak
-[GitHub](https://github.com/neckerchief)
-[LinkedIn](https://www.linkedin.com/in/paulina-michalak-a55941252/)
+Paulina Michalak  
+[GitHub](https://github.com/neckerchief)  
+[LinkedIn](https://www.linkedin.com/in/paulina-michalak-a55941252/)  
 [MyPortfolio](https://neckerchief.github.io/PMichalakPortfolio.github.io/)
 
 ---
