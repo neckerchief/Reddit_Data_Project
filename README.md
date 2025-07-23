@@ -48,18 +48,19 @@ Reddit_Data_Project/
 ## 📦 Setup
 
 1. Clone the repository:
-
-  git clone https://github.com/YOUR_USERNAME/Reddit_Data_Project.git
-  cd Reddit_Data_Project
-
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/Reddit_Data_Project.git
+   cd Reddit_Data_Project
+   ``` 
 2. (Optional) Create and activate a virtual environment:
-
+  ```bash
   python -m venv venv
   source venv/bin/activate  # or venv\Scripts\activate on Windows
-
+  ```
 3. Install dependencies:
-
-  pip install -r requirements.txt
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 ## 🧠 Data Sources
 
