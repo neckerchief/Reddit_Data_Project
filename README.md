@@ -1,6 +1,8 @@
-# REDDIT DATA PROJECT 🚀
+# REDDIT DATA PROJECT 🚀 (In Progress)
 
-A personal data science project exploring Reddit content and user behavior patterns, with a focus on cognitive, psychological, and social insights.
+This is an ongoing personal data science project exploring Reddit content and user behavior patterns, with a focus on cognitive, psychological, and social insights.
+
+![Status](https://img.shields.io/badge/status-in--progress-yellow)
 
 ---
 
