@@ -55,6 +55,12 @@ cover/
 *.mo
 *.pot
 
+# User mappings (sensitive data)
+mappings/
+user_mapping.json
+*_mapping.json
+*_mapping.csv
+
 # Django stuff:
 *.log
 local_settings.py

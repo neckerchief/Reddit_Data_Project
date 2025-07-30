@@ -128,7 +128,7 @@ def content_type_features(df):
     
     # Self post vs link post
     if 'is_self' in df.columns:
-        df['is_self_post'] = df['is_self'].astype(int)
+        df['is_self'] = df['is_self'].astype(int)
     
     # Has selftext content
     if 'selftext' in df.columns:
@@ -136,7 +136,7 @@ def content_type_features(df):
     
     # NSFW content
     if 'over_18' in df.columns:
-        df['is_nsfw'] = df['over_18'].astype(int)
+        df['over_18'] = df['over_18'].astype(int)
     
     # Title only posts (no selftext)
     if 'selftext' in df.columns and 'title' in df.columns:
@@ -222,7 +222,7 @@ if __name__ == '__main__':
     
     result_df = create_all_features(test_df)
     print(f"\nFinal DataFrame shape: {result_df.shape}")
-
+    print(result_df.head())
     
 
 

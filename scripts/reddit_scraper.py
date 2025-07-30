@@ -1,6 +1,8 @@
 import praw
 import pandas as pd
 import os
+import json
+import hashlib
 from datetime import datetime
 from dotenv import load_dotenv
 import glob
@@ -26,6 +28,60 @@ POST_LIMIT = 1000
 SORT_BY = 'hot'  # Options: 'hot', 'new', 'top'
 MASTER_FILENAME = 'reddit_posts_master.csv'  # Single file for all posts
 
+# ----------- USER ANONYMIZATION -----------
+class UserAnonymizer:
+    def __init__(self, mapping_file_path):
+        self.mapping_file = mapping_file_path
+        self.username_to_id = {}
+        self.next_user_id = 1
+        self.load_existing_mapping()
+
+    def load_existing_mapping(self):
+        """Load existing username mapping if it exists"""
+        if os.path.exists(self.mapping_file):
+            try:
+                with open(self.mapping_file, 'r') as f:
+                    data = json.load(f)
+                    self.username_to_id = data.get('username_to_id', {})
+                    self.next_user_id = data.get('next_user_id', 1)
+                print(f"Loaded existing user mapping with {len(self.username_to_id)} users")
+            except Exception as e:
+                print(f"Error loading user mapping :{e}")
+                print("Starting with fresh mapping")
+
+    def save_mapping(self):
+        """Save usermapping to json file"""
+        os.makedirs(os.path.dirname(self.mapping_file), exist_ok=True)
+
+        mapping_data = {
+            'username_to_id': self.username_to_id,
+            'next_user_id': self.next_user_id,
+            'created_at': datetime.now().isoformat(),
+            'total_users': len(self.username_to_id)
+        }
+
+        with open(self.mapping_file, 'w') as f:
+            json.dump(mapping_data, f, indent=2)
+
+    def anonymize_username(self, username):
+        """COnvert username to anonymous ID"""
+        # Handle delted/None users
+        if username is None or username == 'None' or username == '[delted]':
+            return 'user_deleted'
+
+        username_str = str(username)
+
+        # Check if the user occured before
+        if username_str in self.username_to_id:
+            return self.username_to_id[username_str]
+        
+        # Create new anonymous ID
+        anonymous_id = f"user_{self.next_user_id:04d}"
+        self.username_to_id[username_str] = anonymous_id
+        self.next_user_id += 1
+
+        return anonymous_id
+
 # ----------- HELPER FUNCTION -----------
 def load_existing_posts(data_dir):
     """Load existing posts from master file to avoid duplicates"""
@@ -42,8 +98,8 @@ def load_existing_posts(data_dir):
         return pd.DataFrame(), set()
     
 # ----------- SCRAPING FUNCTION -----------
-def scrape_subreddit(subreddit_name, sort_by='hot', limit=1000, existing_ids=None):
-    """Scrape subreddit posts, filtering out existing ones"""
+def scrape_subreddit(subreddit_name, sort_by='hot', limit=1000, existing_ids=None, anonymizer=None):
+    """Scrape subreddit posts, filtering out existing ones and anonymizing usernames"""
     if existing_ids is None:
         existing_ids = set()
 
@@ -66,6 +122,9 @@ def scrape_subreddit(subreddit_name, sort_by='hot', limit=1000, existing_ids=Non
             skipped_posts_count += 1
             continue
 
+        # Anonymize username
+        anonymous_author = anonymizer.anonymize_username(post.author) if anonymizer else str(post.author)
+
         records.append({
             'id': post.id,
             'title': post.title,
@@ -74,7 +133,7 @@ def scrape_subreddit(subreddit_name, sort_by='hot', limit=1000, existing_ids=Non
             'num_comments': post.num_comments,
             'created_utc': post.created_utc,
             'subreddit': subreddit_name,
-            'author': str(post.author),
+            'author': anonymous_author,
             'over_18': post.over_18,
             'is_self': post.is_self,
             'url': post.url,
@@ -86,7 +145,7 @@ def scrape_subreddit(subreddit_name, sort_by='hot', limit=1000, existing_ids=Non
     return pd.DataFrame(records)
 
 # ----------- SAVING FUNCTION -----------
-def save_posts(all_posts, existing_posts, data_dir):
+def save_posts(all_posts, existing_posts, data_dir, anonymizer=None):
     """Save posts to master file and create timestamped backup"""
     # Combine axisitng and new posts
     if not existing_posts.empty:
@@ -111,6 +170,11 @@ def save_posts(all_posts, existing_posts, data_dir):
         backup_path = os.path.join(data_dir, backup_filename)
         all_posts.to_csv(backup_path, index=False)
         print(f"New posts backup saved to {backup_path}")
+
+    # Save user mapping
+    if anonymizer:
+        anonymizer.save_mapping()
+        print(f"User mapping saved with {len(anonymizer.username_to_id)} total users")
     
     return combined_posts, master_path
 
@@ -120,7 +184,14 @@ if __name__ == '__main__':
     # Setup paths
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     DATA_RAW_DIR = os.path.join(BASE_DIR, 'data', 'raw')
+    MAPPINGS_DIR = os.path.join(BASE_DIR, 'mappings')
+    
     os.makedirs(DATA_RAW_DIR, exist_ok=True)
+    os.makedirs(MAPPINGS_DIR, exist_ok=True)
+
+    # Initialize user anonymizer
+    mapping_file_path = os.path.join(MAPPINGS_DIR, 'user_mapping.json')
+    anonymizer = UserAnonymizer(mapping_file_path)
     
     # Load existing posts
     existing_posts, existing_ids = load_existing_posts(DATA_RAW_DIR)
@@ -131,7 +202,7 @@ if __name__ == '__main__':
     
     for sub in SUBREDDITS:
         print(f"Scraping r/{sub}...")
-        df = scrape_subreddit(sub, SORT_BY, POST_LIMIT, existing_ids)
+        df = scrape_subreddit(sub, SORT_BY, POST_LIMIT, existing_ids, anonymizer)
         if not df.empty:
             new_posts = pd.concat([new_posts, df], ignore_index=True)
             total_new_posts += len(df)
@@ -140,12 +211,15 @@ if __name__ == '__main__':
     
     # Save results
     if total_new_posts > 0:
-        combined_posts, master_path = save_posts(new_posts, existing_posts, DATA_RAW_DIR)
+        combined_posts, master_path = save_posts(new_posts, existing_posts, DATA_RAW_DIR, anonymizer)
         print(f"\n=== SCRAPING COMPLETE ===")
         print(f"New posts scraped: {total_new_posts}")
         print(f"Total posts in database: {len(combined_posts)}")
+        print(f"Total anonymous users: {len(anonymizer.username_to_id)}")
         print(f"Master file: {master_path}")
+        print(f"User mapping: {mapping_file_path}")
     else:
         print(f"\n=== NO NEW POSTS FOUND ===")
         print(f"All posts were duplicates. Total posts in database: {len(existing_posts)}")
+        print(f"Total anonymous users: {len(anonymizer.username_to_id)}")
 
