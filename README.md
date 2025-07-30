@@ -20,13 +20,19 @@ This project aims to simulate a full data science workflow from raw data collect
 ## 📁 Project Structure
 ```
 Reddit_Data_Project/
-├── data/                           # Raw and processed Reddit data
+├── data/                           # Only anonymized (safe for Git) raw and processed Reddit data
 │   ├── raw/                        # As downloaded
 │   └── processed/                  # Cleaned datasets
+├── mappings/                       # NOT in Git (sensitive)
+│   └── user_mapping.json           # Real → Anonymous mapping
 ├── notebooks/                      # Jupyter notebooks (EDA, modeling, etc.)
 │   └── 01_initial_exploration.ipynb
-├── scripts/                        # Scripts for scraping, cleaning, etc.
+|   └── 02_initial_exploration.ipynb
+├── scripts/                        # Scripts for scraping, cleaning, feature engineering etc.
+│   └── feature_engineering.py
+│   └── preprocess_all.py
 │   └── reddit_scraper.py
+│   └── text_preprocessing.py
 ├── reports/                        # Reports and charts
 │   └── figures/                    # Visualizations
 ├── README.md                       # This file
