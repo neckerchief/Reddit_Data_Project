@@ -136,7 +136,6 @@ def scrape_subreddit(subreddit_name, sort_by='hot', limit=1000, existing_ids=Non
             'author': anonymous_author,
             'over_18': post.over_18,
             'is_self': post.is_self,
-            'url': post.url,
             'scraped_at': datetime.now().isoformat()  # Track when scraped
         })
         new_posts_count += 1

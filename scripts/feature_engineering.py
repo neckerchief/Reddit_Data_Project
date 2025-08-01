@@ -88,10 +88,6 @@ def engagement_features(df):
         df['has_comments'] = (df['num_comments'] > 0).astype(int)
         df['comments_log'] = np.log1p(df['num_comments'])
 
-    # Engagement ratio (if both score and comments exist)
-    if 'score' in df.columns and 'num_comments' in df.columns:
-        df['engagement_ratio'] = df['num_comments'] / np.maximum(np.abs(df['score']), 1)
-    
     return df
 
 def text_complexity_features(df, text_columns=['full_text']):
