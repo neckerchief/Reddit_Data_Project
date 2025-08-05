@@ -61,6 +61,12 @@ user_mapping.json
 *_mapping.json
 *_mapping.csv
 
+# Large data files
+data/
+*.csv
+*.parquet
+*.zst
+
 # Django stuff:
 *.log
 local_settings.py

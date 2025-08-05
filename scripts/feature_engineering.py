@@ -12,20 +12,16 @@ def word_count_features(df, text_columns=['title', 'selftext', 'full_text', 'cle
             continue
 
         # Handle NaN values
-        df[column] = df[column].fillna('')
+        df[column] = df[column].fillna('').astype(str)
 
         # String length feature
-        df[f'{column}_char_count'] = df[column].astype(str).str.len()
+        df[f'{column}_char_count'] = df[column].str.len()
 
         # Word count feature
-        df[f'{column}_word_count'] = df[column].astype(str).apply(
-            lambda x: len(x.split()) if x.strip() else 0    # Handles empty strings
-        )
+        df[f'{column}_word_count'] = df[column].str.split().str.len()
 
         # Average word length
-        df[f'{column}_avg_word_length'] = df[column].astype(str).apply(
-            lambda x: np.mean([len(word) for word in x.split()]) if x.strip() else 0
-        )
+        df[f'{column}_avg_word_length'] = (df[f'{column}_char_count'] / df[f'{column}_word_count'].replace(0, np.nan)).fillna(0)
 
     return df
 
@@ -118,6 +114,9 @@ def text_complexity_features(df, text_columns=['full_text']):
 
     return df
 
+def has_text(s):
+    return s.fillna('').str.len() > 0
+
 def content_type_features(df):
     """Creates features about the type and nature of the post content"""
     df = df.copy()
@@ -128,7 +127,7 @@ def content_type_features(df):
     
     # Has selftext content
     if 'selftext' in df.columns:
-        df['has_selftext'] = (df['selftext'].fillna('').str.len() > 0).astype(int)
+        df['has_selftext'] = has_text(df['selftext']).astype(int)
     
     # NSFW content
     if 'over_18' in df.columns:
@@ -138,7 +137,7 @@ def content_type_features(df):
     if 'selftext' in df.columns and 'title' in df.columns:
         df['title_only_post'] = (
             (df['selftext'].fillna('').str.len() == 0) & 
-            (df['title'].fillna('').str.len() > 0)
+            has_text(df['title'])
         ).astype(int)
     
     return df
@@ -152,8 +151,7 @@ def user_activity_features(df):
         return df
     
     # Posts per user
-    user_post_counts = df['author'].value_counts()
-    df['user_total_posts'] = df['author'].map(user_post_counts)
+    df['user_total_posts'] = df.groupby('author')['author'].transform('count')
     
     # User activity level categories
     df['user_activity_level'] = pd.cut(df['user_total_posts'], 

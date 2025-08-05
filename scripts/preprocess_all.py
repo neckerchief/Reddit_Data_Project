@@ -8,7 +8,7 @@ from feature_engineering import create_all_features
 raw_dir = Path("data/raw")
 processed_dir = Path("data/processed")
 master_file = raw_dir / "reddit_posts_master.csv"
-output_file = processed_dir / "reddit_posts_master_processed.csv"
+output_file = processed_dir / "reddit_posts_master_processed.parquet"
 
 # Ensure processed directory exists
 processed_dir.mkdir(parents=True, exist_ok=True)
@@ -36,8 +36,7 @@ df_processed_further = create_all_features(df_processed)
 
 # Save processed DataFrame
 print(f"Saving to: {output_file}")
-df_processed_further.to_csv(output_file, index=False)
-
+df_processed_further.to_parquet(output_file, index=False)
 print("=== PREPROCESSING COMPLETE ===")
 print(f"Input rows: {len(df)}")
 print(f"Output rows: {len(df_processed_further)}")

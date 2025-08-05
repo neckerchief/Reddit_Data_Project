@@ -1,0 +1,57 @@
+import pandas as pd
+import glob
+import os
+from pathlib import Path
+# from text_preprocessing import preprocess_dataframe
+# from feature_engineering import create_all_features
+
+# # Define paths
+# raw_dir = Path("data/raw/zstd")
+# processed_dir = Path("data/processed/processed_chunks")
+# master_file = raw_dir / "reddit_posts_historical_master.csv"
+# # Ensure processed directory exists
+# processed_dir.mkdir(parents=True, exist_ok=True)
+
+# if not master_file.exists():
+#     print(f"ERROR: Master file not found: {master_file}")
+#     print("Make sure you've run the scraper first!")
+#     exit(1)
+
+# print(f"Processing master file: {master_file}")
+
+# # Chunked reading
+# chunk_size = 25_000
+# all_chunks = []
+
+# print("Starting chunked preprocessing...")
+
+# for i, chunk in enumerate(pd.read_csv(master_file, chunksize=chunk_size)):
+#     print(f"Processing chunk {i+1} with {len(chunk)} rows")
+#     output_file = processed_dir / f"processed_chunk_{i}.parquet"
+
+
+#     # Text preprocessing
+#     chunk = preprocess_dataframe(chunk, text_col1='title', text_col2='selftext')
+
+#     # Feature engineering
+#     chunk = create_all_features(chunk)
+
+#     # Save to Parquet file
+#     chunk.to_parquet(output_file, index=False)
+
+
+# Get all chunk file paths
+parquet_files = sorted(glob.glob("data/processed/processed_chunks/processed_chunk_*.parquet"))
+
+# Read and concatenate them
+dfs = [pd.read_parquet(file) for file in parquet_files]
+combined_df = pd.concat(dfs, ignore_index=True)
+
+merged_chunks_dir = Path("data/processed")
+merged_output_file = merged_chunks_dir / "merged_chunks_processed.parquet"
+
+# Save as one Parquet file
+combined_df.to_parquet(merged_output_file, index=False)
+
+print("=== PREPROCESSING COMPLETE ===")
+print(f"Processed file saved to: {merged_output_file}")
