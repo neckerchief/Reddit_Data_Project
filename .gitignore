@@ -77,6 +77,12 @@ db.sqlite3-journal
 instance/
 .webassets-cache
 
+# Large data files
+data/
+*.csv
+*.parquet
+*.zst
+
 # Scrapy stuff:
 .scrapy
 
